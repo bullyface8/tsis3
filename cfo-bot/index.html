@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFO Bot - Cloud Cost Calculator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #64748b;
+            margin-bottom: 32px;
+            font-size: 1rem;
+        }
+        .section {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            border: 1px solid #e2e8f0;
+        }
+        .section h2 {
+            font-size: 1.25rem;
+            color: #1e293b;
+            margin-bottom: 20px;
+        }
+        .row {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-bottom: 16px;
+        }
+        .field {
+            flex: 1;
+            min-width: 180px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 600;
+            color: #334155;
+            font-size: 0.875rem;
+        }
+        select, input {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid #cbd5e1;
+            border-radius: 10px;
+            font-size: 0.875rem;
+            background: white;
+        }
+        button {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin: 8px 0 24px 0;
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+        .results {
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            border-radius: 16px;
+            padding: 32px;
+            text-align: center;
+        }
+        .total {
+            font-size: 64px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin: 16px 0;
+        }
+        .breakdown {
+            display: flex;
+            justify-content: center;
+            gap: 48px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #cbd5e1;
+        }
+        .breakdown-item {
+            text-align: center;
+        }
+        .breakdown-item .label {
+            font-size: 0.75rem;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+        .breakdown-item .value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+        .detail {
+            margin-top: 20px;
+            padding-top: 16px;
+            border-top: 1px solid #cbd5e1;
+            font-size: 0.75rem;
+            color: #64748b;
+            text-align: left;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+        }
+        .detail-item {
+            background: white;
+            padding: 8px 12px;
+            border-radius: 8px;
+        }
+        .detail-item strong {
+            color: #334155;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>💰 CFO Bot</h1>
+        <div class="subtitle">Cloud Cost Estimation System</div>
+
+        <div class="section">
+            <h2>⚙️ Configuration</h2>
+            <div class="row">
+                <div class="field">
+                    <label>🤖 AI Model</label>
+                    <select id="model">
+                        <option value="lite">Lite - $0.10 per 1M tokens</option>
+                        <option value="standard" selected>Standard - $1.00 per 1M tokens</option>
+                        <option value="pro">Pro - $3.00 per 1M tokens</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>🖥️ Hosting</label>
+                    <select id="hosting">
+                        <option value="free">Free Tier - $0/month</option>
+                        <option value="basic" selected>Basic Server - $5/month</option>
+                        <option value="standard">Standard Server - $10/month</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>📊 Usage Inputs</h2>
+            <div class="row">
+                <div class="field">
+                    <label>👥 Active Users</label>
+                    <input type="number" id="users" value="100" min="1">
+                </div>
+                <div class="field">
+                    <label>💬 Messages per user / day</label>
+                    <input type="number" id="messages" value="10" min="0">
+                </div>
+                <div class="field">
+                    <label>🔤 Tokens per message</label>
+                    <input type="number" id="tokens" value="100" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>💾 Storage (GB)</label>
+                    <input type="number" id="storage" value="10" min="0">
+                </div>
+                <div class="field">
+                    <label>🌐 Bandwidth (GB)</label>
+                    <input type="number" id="bandwidth" value="10" min="0">
+                </div>
+            </div>
+            <div class="row">
+                <div class="field">
+                    <label>📖 Database reads / day</label>
+                    <input type="number" id="reads" value="0" min="0">
+                </div>
+                <div class="field">
+                    <label>✍️ Database writes / day</label>
+                    <input type="number" id="writes" value="0" min="0">
+                </div>
+            </div>
+        </div>
+
+        <button onclick="calculateCost()">🧮 CALCULATE MONTHLY COST</button>
+
+        <div class="results">
+            <div class="total" id="totalCost">$0.00</div>
+            <div class="breakdown">
+                <div class="breakdown-item">
+                    <div class="label">🤖 AI Cost</div>
+                    <div class="value" id="aiCost">$0.00</div>
+                </div>
+                <div class="breakdown-item">
+                    <div class="label">🏗️ Infrastructure</div>
+                    <div class="value" id="infraCost">$0.00</div>
+                </div>
+            </div>
+            <div id="detailSection"></div>
+        </div>
+    </div>
+
+    <script>
+        // MODEL DEFINITIONS - FIXED VERSION
+        const MODELS = {
+            lite: { name: 'Lite', multiplier: 0.3, baseRate: 0.10 },
+            standard: { name: 'Standard', multiplier: 1.0, baseRate: 1.00 },
+            pro: { name: 'Pro', multiplier: 1.0, baseRate: 3.00 }
+        };
+        
+        const HOSTING = {
+            free: { name: 'Free Tier', cost: 0 },
+            basic: { name: 'Basic Server', cost: 5 },
+            standard: { name: 'Standard Server', cost: 10 }
+        };
+
+        function calculateCost() {
+            const users = parseInt(document.getElementById('users').value);
+            const messagesPerDay = parseInt(document.getElementById('messages').value);
+            const tokensPerMsg = parseInt(document.getElementById('tokens').value);
+            const modelId = document.getElementById('model').value;
+            const hostingId = document.getElementById('hosting').value;
+            const storageGB = parseFloat(document.getElementById('storage').value) || 0;
+            const bandwidthGB = parseFloat(document.getElementById('bandwidth').value) || 0;
+            const dbReads = parseFloat(document.getElementById('reads').value) || 0;
+            const dbWrites = parseFloat(document.getElementById('writes').value) || 0;
+
+            if (users < 1) {
+                alert('Users must be at least 1');
+                return;
+            }
+
+            const model = MODELS[modelId];
+            const hosting = HOSTING[hostingId];
+
+            const monthlyRequests = users * messagesPerDay * 30;
+            const totalTokens = monthlyRequests * tokensPerMsg;
+            
+            // EFFECTIVE RATE = baseRate × multiplier
+            const effectiveRate = model.baseRate * model.multiplier;
+            const aiCost = (totalTokens / 1000000) * effectiveRate;
+            
+            const storageCost = storageGB * 0.02;
+            const bandwidthCost = bandwidthGB * 0.05;
+            const monthlyReads = dbReads * 30;
+            const monthlyWrites = dbWrites * 30;
+            const dbCost = (monthlyReads * 0.0001) + (monthlyWrites * 0.0002);
+            const infraCost = hosting.cost + storageCost + bandwidthCost + dbCost;
+            const totalCost = aiCost + infraCost;
+
+            document.getElementById('totalCost').innerHTML = '$' + totalCost.toFixed(2);
+            document.getElementById('aiCost').innerHTML = '$' + aiCost.toFixed(2);
+            document.getElementById('infraCost').innerHTML = '$' + infraCost.toFixed(2);
+            
+            const detailSection = document.getElementById('detailSection');
+            detailSection.innerHTML = `
+                <div class="detail">
+                    <div class="detail-item">
+                        <strong>📊 Usage</strong><br>
+                        Monthly Requests: ${monthlyRequests.toLocaleString()}<br>
+                        Total Tokens: ${totalTokens.toLocaleString()}
+                    </div>
+                    <div class="detail-item">
+                        <strong>💰 Breakdown</strong><br>
+                        AI: $${aiCost.toFixed(2)}<br>
+                        Hosting: $${hosting.cost}<br>
+                        Storage: $${storageCost.toFixed(2)}<br>
+                        Bandwidth: $${bandwidthCost.toFixed(2)}<br>
+                        Database: $${dbCost.toFixed(2)}
+                    </div>
+                    <div class="detail-item">
+                        <strong>⚙️ Selection</strong><br>
+                        Model: ${model.name}<br>
+                        Hosting: ${hosting.name}<br>
+                        Effective Rate: $${effectiveRate.toFixed(2)}/1M tokens
+                    </div>
+                </div>
+            `;
+        }
+
+        window.onload = calculateCost;
+    </script>
+</body>
+</html>
